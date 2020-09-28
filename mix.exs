@@ -4,7 +4,7 @@ defmodule Hello.MixProject do
   def project do
     [
       app: :hello,
-      version: "0.1.0",
+      version: version_from_git(),
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
@@ -54,8 +54,25 @@ defmodule Hello.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"]
+      setup: ["deps.get"],
+      ver: &print_version/1
     ]
+  end
+
+  defp version_from_git do
+    {rev, 0} = System.cmd("git", ["describe", "--always", "--tags"])
+    to_sem_ver(String.trim(rev))
+  end
+
+  defp print_version(_) do
+    Mix.shell().info(version_from_git())
+  end
+
+  defp to_sem_ver(ver) do
+    case String.split(ver, "-") do
+      [tag] -> tag
+      [tag, _n, hash] -> tag <> "-" <> hash
+    end
   end
 
   defp releases do
